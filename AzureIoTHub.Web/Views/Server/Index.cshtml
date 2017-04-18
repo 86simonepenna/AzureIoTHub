@@ -1,0 +1,114 @@
+﻿@model AzureIoTHub.Web.Models.DevicesViewModel
+
+<div>
+    <h4>DevicesViewModel</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.DevicesConnected)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DevicesConnected, new { id = "deviceCount" })
+        </dd>
+
+    </dl>
+</div>
+
+<div id="devices">
+</div>
+
+<div class="form-horizontal">
+    <div class="form-group" for="buttonTwin">
+        <label for="setDesiredProperty">Set Desired Property</label>
+        <input type="text" class="form-control" id="setDesiredProperty" placeholder="Insert text">
+    </div>
+    <button type="button" class="btn btn-default" onclick="SendTextToAllDevicesAsync()" id="buttonTwin">Send</button>
+</div>
+
+@section Scripts{
+    <script src="~/signalr/hubs" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.connection.blobHub.client.photoLoaded = function (deviceId, threshold, photo) {
+                if ($('#row' + deviceId).length === 0)
+                    $("#devices").append(drawNewDevice(deviceId, threshold));
+                // Aggiorno la foto
+                $('#photo' + deviceId).removeAttr('src');
+                $('#photo' + deviceId).attr('src', 'data:image/png;base64,' + photo);
+                // Aggiorno la soglia
+                $('#threshold').empty();
+                $('#threshold').append(threshold);
+            };
+
+            $.connection.hub.start(function () {
+                console.log("connection started!");
+            });
+        });
+
+        function drawNewDevice(deviceId, threshold) {
+            return "<div class='row' id='row" + deviceId + "'> \
+                <div class='col-xs-6'>\
+                    <img class='img-thumbnail' alt='Ultima foto del device: " + deviceId + "' id='photo" + deviceId + "' />\
+                </div>\
+                <div class='col-xs-6'>\
+                    <div class='row'>\
+                        <b>DeviceID:</b> " + deviceId + "\
+                    </div>\
+                    <div class='row'>\
+                        <div class=\"col-xs-4\">\
+                            <button type='button' onclick='StartPir(\"" + deviceId + "\");' class='btn btn-success'>Start Pir</button>\
+                        </div>\
+                        <div class=\"col-xs-4\">\
+                              <button type='button' onclick='StopPir(\"" + deviceId + "\");' class='btn btn-danger'>Stop Pir</button>\
+                        </div>\
+                    </div>\
+                    <div class='row'>\
+                        <div class=\"col-xs-12\">\
+                            <br />\
+                            <b>Threshold:</b> <span id='threshold'>" + threshold + "</span>\
+                        </div>\
+                    </div>\
+                    <div class='row'>\
+                        <div class=\"col-xs-4\">\
+                            <button type='button' onclick='AddThreshold(\"" + deviceId + "\");' class='btn btn-success'>Add Threshold</button>\
+                        </div>\
+                        <div class=\"col-xs-4\">\
+                              <button type='button' onclick='SubThreshold(\"" + deviceId + "\");' class='btn btn-danger'>Sub Threshold</button>\
+                        </div>\
+                    </div>\
+            </div></div>";
+        }
+
+        function StartPir(deviceID) {
+            $.ajax({
+                url: "/Server/StartDevice?deviceId=" + deviceID
+            });
+        }
+
+        function StopPir(deviceID) {
+            $.ajax({
+                url: "/Server/StopDevice?deviceId=" + deviceID
+            });
+        }
+
+        function AddThreshold(deviceID) {
+            $.ajax({
+                url: "/Server/AddThresholdDevice?deviceId=" + deviceID
+            });
+        }
+
+        function SubThreshold(deviceID) {
+            $.ajax({
+                url: "/Server/SubThresholdDevice?deviceId=" + deviceID
+            });
+        }
+
+        function SendTextToAllDevicesAsync() {
+            let textValue = $('#setDesiredProperty').val();
+            $.ajax({
+                url: "/Server/SendTextToAllDevicesAsync?text=" + textValue
+            });
+        }
+    </script>
+}

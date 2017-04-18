@@ -1,0 +1,6 @@
+﻿{
+  "IsPirEnable": false,
+  "IsDistanceSensorEnable": false,
+  "IotHubConnectionString": "connection string iot hub shared access policies/device",
+  "IotHubRegistryConnectionString": "connection string iot hub shared access policies/registry read write"
+}
